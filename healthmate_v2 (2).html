@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthMate</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a2744;--navy-light:#243560;--blue:#2563eb;--blue-soft:#e8f0fe;
+  --teal:#0d9488;--teal-soft:#e0f2f1;--amber:#d97706;--amber-soft:#fef3c7;
+  --red:#dc2626;--red-soft:#fee2e2;--green:#16a34a;--green-soft:#dcfce7;
+  --purple:#7c3aed;--purple-soft:#ede9fe;
+  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+  --gray-500:#64748b;--gray-700:#334155;--gray-900:#0f172a;--white:#ffffff;
+  --sidebar-w:72px;--header-h:64px;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--gray-50);color:var(--gray-900);min-height:100vh}
+
+/* ── SCREEN SYSTEM ── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── LOGIN ── */
+#screen-login{background:var(--navy);align-items:center;justify-content:center;flex-direction:column;gap:0}
+.login-wrap{width:100%;max-width:960px;padding:40px 24px;display:flex;flex-direction:column;align-items:center}
+.login-logo{display:flex;align-items:center;gap:10px;color:#fff;font-size:22px;font-weight:600;margin-bottom:10px}
+.login-logo-icon{width:36px;height:36px;background:#3b6ef5;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.login-logo-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.login-tagline{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:40px}
+.login-title{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;margin-bottom:8px;text-align:center}
+.login-sub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:32px;text-align:center}
+.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:760px}
+.role-card{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  border-radius:var(--radius-lg);padding:24px 20px;cursor:pointer;
+  transition:all 0.2s;display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+  color:#fff;text-align:left;
+}
+.role-card:hover{background:rgba(255,255,255,0.13);border-color:rgba(255,255,255,0.3);transform:translateY(-2px)}
+.role-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.role-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.75}
+.role-name{font-size:15px;font-weight:500}
+.role-desc{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5}
+.role-uc{font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px}
+
+/* ── SHARED LAYOUT ── */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:var(--header-h);background:var(--navy);
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+}
+.logo{display:flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:17px;text-decoration:none;min-width:140px;cursor:pointer}
+.logo-icon{width:28px;height:28px;background:#3b6ef5;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.role-badge{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:500;color:#fff;border:1px solid rgba(255,255,255,0.25)}
+.logout-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.logout-btn:hover{background:rgba(255,255,255,0.16)}
+.user-chip{display:flex;align-items:center;gap:8px;padding:4px 12px 4px 6px;background:rgba(255,255,255,0.1);border-radius:20px;color:#fff;border:1px solid rgba(255,255,255,0.15)}
+.avatar{width:28px;height:28px;border-radius:50%;background:#3b6ef5;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
+.user-info{line-height:1.2}
+.user-name{font-size:12px;font-weight:500}
+.user-role{font-size:10px;color:rgba(255,255,255,0.55)}
+
+.sidebar{
+  position:fixed;left:0;top:var(--header-h);bottom:0;z-index:90;
+  width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--gray-200);
+  display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;
+}
+.nav-item{
+  width:44px;height:44px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gray-500);cursor:pointer;transition:all 0.15s;border:none;background:none;
+  position:relative;
+}
+.nav-item:hover{background:var(--gray-100);color:var(--gray-700)}
+.nav-item.active{background:var(--blue-soft);color:var(--blue)}
+.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75}
+.nav-tooltip{
+  position:absolute;left:56px;background:var(--gray-900);color:#fff;
+  font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:200;
+}
+.nav-item:hover .nav-tooltip{opacity:1}
+.nav-divider{width:32px;height:1px;background:var(--gray-200);margin:6px 0}
+
+.main{margin-top:var(--header-h);margin-left:var(--sidebar-w);padding:28px;min-height:calc(100vh - var(--header-h))}
+.page{display:none}.page.active{display:block}
+
+/* ── COMMON COMPONENTS ── */
+.card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm)}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy)}
+.page-sub{font-size:14px;color:var(--gray-500);margin-top:2px}
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-500)}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.badge-scheduled{background:var(--green-soft);color:var(--green)}
+.badge-pending{background:var(--amber-soft);color:var(--amber)}
+.badge-cancelled{background:var(--red-soft);color:var(--red)}
+.badge-info{background:var(--blue-soft);color:var(--blue)}
+.badge-purple{background:var(--purple-soft);color:var(--purple)}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--navy);color:#fff;border:none;border-radius:20px;
+  padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background 0.15s;
+}
+.btn-primary:hover{background:var(--navy-light)}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--gray-300);background:none;border-radius:var(--radius-sm);
+  padding:8px 16px;font-size:13px;color:var(--gray-700);cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.15s;
+}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.btn-outline svg,.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none}
+.alert-banner{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-radius:var(--radius-md);margin-bottom:16px;border:1px solid}
+.alert-banner.warning{background:var(--amber-soft);border-color:#fcd34d;color:#78350f}
+.alert-banner.danger{background:var(--red-soft);border-color:#fca5a5;color:#7f1d1d}
+.alert-banner.success{background:var(--green-soft);border-color:#86efac;color:#14532d}
+.alert-banner svg{width:18px;height:18px;stroke:currentColor;fill:none;flex-shrink:0;margin-top:1px}
+.alert-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.alert-text{font-size:12px;opacity:.85;line-height:1.5}
+.stat-grid{display:grid;gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:box-shadow 0.15s}
+.stat-card:hover{box-shadow:var(--shadow-md)}
+.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75}
+.stat-num{font-size:22px;font-weight:600;line-height:1;margin-bottom:3px}
+.stat-label{font-size:12px;color:var(--gray-500)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--gray-100)}
+.toggle-label{font-size:13px;color:var(--gray-700)}
+.toggle{position:relative;width:38px;height:22px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--gray-300);border-radius:11px;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--blue)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(16px)}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--gray-300);background:none;font-size:12px;color:var(--gray-700);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.filter-btn:hover,.filter-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.progress-bar{height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden;margin-top:12px}
+.progress-fill{height:100%;border-radius:3px}
+
+/* ── PATIENT DASHBOARD ── */
+.welcome-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);margin-bottom:4px}
+.dash-grid{display:grid;grid-template-columns:1fr 300px;gap:20px}
+.dash-left{display:flex;flex-direction:column;gap:20px}
+.dash-right{display:flex;flex-direction:column;gap:16px}
+.pharmacy-card{padding:0;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.pharmacy-info{padding:24px;display:flex;flex-direction:column;gap:12px}
+.pharmacy-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);line-height:1.25}
+.map-placeholder{background:linear-gradient(135deg,#dbeafe,#e0f2fe);min-height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick-item{display:flex;align-items:flex-start;gap:10px;padding:14px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:all 0.15s}
+.quick-item:hover{border-color:var(--blue);background:var(--blue-soft)}
+.quick-item svg{width:18px;height:18px;stroke:var(--blue);fill:none;flex-shrink:0;margin-top:1px}
+.quick-item-title{font-size:13px;font-weight:500;color:var(--gray-900);margin-bottom:2px}
+.quick-item-sub{font-size:11px;color:var(--gray-500)}
+.visit-item{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-md)}
+.visit-date-box{background:var(--blue-soft);border-radius:var(--radius-sm);padding:6px 10px;text-align:center;flex-shrink:0}
+.visit-month{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--blue)}
+.visit-day{font-size:18px;font-weight:700;color:var(--navy);line-height:1}
+.appt-row{display:flex;align-items:center;gap:16px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:16px 20px}
+.appt-row-date{background:var(--blue-soft);border-radius:var(--radius-sm);padding:8px 14px;text-align:center;min-width:60px}
+.appt-row-month{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--blue)}
+.appt-row-day{font-size:22px;font-weight:700;color:var(--navy);line-height:1}
+.appt-row-time{font-size:11px;color:var(--gray-500);margin-top:2px}
+.btn-cancel{padding:7px 14px;border-radius:8px;border:1px solid var(--gray-300);background:none;font-size:13px;color:var(--gray-700);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.btn-cancel:hover{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+
+/* AI diagnosis */
+.ai-card{padding:24px}
+.original-diag{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:16px;margin-bottom:16px}
+.diag-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-500);margin-bottom:8px}
+.diag-text{font-size:13px;color:var(--gray-700);line-height:1.6;font-family:'DM Serif Display',serif;font-style:italic}
+.ai-simplified{background:var(--purple-soft);border:1px solid #c4b5fd;border-radius:var(--radius-md);padding:16px}
+.ai-simplified-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ai-simplified-label svg{width:14px;height:14px;stroke:var(--purple);fill:none}
+.ai-simplified-text{font-size:14px;color:#4c1d95;line-height:1.65}
+
+/* Voice */
+.mic-btn{width:96px;height:96px;border-radius:50%;background:var(--blue);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0 rgba(37,99,235,.4);transition:all .15s;margin-bottom:20px}
+.mic-btn:hover{transform:scale(1.05)}
+.mic-btn.recording{animation:pulse 1.5s infinite;background:var(--red)}
+.mic-btn svg{width:36px;height:36px;stroke:#fff;fill:none;stroke-width:1.75}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}70%{box-shadow:0 0 0 20px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+.voice-transcript{min-height:60px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:14px 18px;width:100%;max-width:460px;font-size:15px;color:var(--gray-900);text-align:left;margin:16px auto;line-height:1.6}
+
+/* Audit log */
+.log-table{width:100%;border-collapse:collapse}
+.log-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-500);padding:12px 16px;text-align:left;border-bottom:1px solid var(--gray-200);background:var(--gray-50)}
+.log-table td{padding:12px 16px;font-size:13px;color:var(--gray-700);border-bottom:1px solid var(--gray-100)}
+.log-table tr:last-child td{border-bottom:none}
+.log-table tr:hover td{background:var(--gray-50)}
+.log-user{display:flex;align-items:center;gap:8px}
+.log-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.log-flag{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--red)}
+.log-flag svg{width:13px;height:13px;stroke:var(--red);fill:none}
+
+/* System */
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.status-card{padding:20px}
+.status-dot{width:10px;height:10px;border-radius:50%}
+.status-dot.online{background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+.status-dot.warn{background:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+.throttle-bars{display:flex;align-items:flex-end;gap:4px;height:80px;margin:16px 0}
+.throttle-bar{flex:1;border-radius:4px 4px 0 0}
+.throttle-bar.safe{background:var(--teal-soft)}
+.throttle-bar.warn{background:var(--amber-soft)}
+.throttle-bar.block{background:var(--red-soft)}
+.throttle-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-500)}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCREEN 0 — LOGIN / ROLE SELECTOR
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-login" style="background:var(--navy);align-items:center;justify-content:center">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      HealthMate
+    </div>
+    <div class="login-tagline">Your integrated health management system</div>
+    <div class="login-title">Sign in as your role</div>
+    <div class="login-sub">Each role has its own dashboard and use cases</div>
+
+    <div class="role-grid">
+      <!-- Patient -->
+      <div class="role-card" onclick="login('patient','Muharrem Esad','MU','#3b6ef5')">
+        <div class="role-icon" style="background:rgba(59,110,245,0.25)">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="role-name">Patient</div>
+        <div class="role-desc">Access your health records, appointments, and AI-simplified diagnoses.</div>
+        <div class="role-uc">UC1 · UC2 · UC3 · UC6</div>
+      </div>
+
+      <!-- Doctor -->
+      <div class="role-card" onclick="login('doctor','Dr. M. Taşçı','MT','#0d9488')">
+        <div class="role-icon" style="background:rgba(13,148,136,0.25)">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="role-name">Doctor</div>
+        <div class="role-desc">Manage patient records, view appointments, and update diagnoses.</div>
+        <div class="role-uc">UC6</div>
+      </div>
+
+      <!-- Health Administrator -->
+      <div class="role-card" onclick="login('admin','Admin Kaya','AK','#d97706')">
+        <div class="role-icon" style="background:rgba(217,119,6,0.25)">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="role-name">Health Administrator</div>
+        <div class="role-desc">View timestamped doctor activity logs and manage patient records.</div>
+        <div class="role-uc">UC5</div>
+      </div>
+
+      <!-- Auditor -->
+      <div class="role-card" onclick="login('auditor','Auditor User','AU','#7c3aed')">
+        <div class="role-icon" style="background:rgba(124,58,237,0.25)">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="role-name">Auditor</div>
+        <div class="role-desc">Track and investigate all record access with non-repudiable audit logs.</div>
+        <div class="role-uc">UC4</div>
+      </div>
+
+      <!-- Developer -->
+      <div class="role-card" onclick="login('developer','Esad Odabaşı','EO','#dc2626')">
+        <div class="role-icon" style="background:rgba(220,38,38,0.25)">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="role-name">Developer</div>
+        <div class="role-desc">Monitor DoS protection, IP throttling, and system security metrics.</div>
+        <div class="role-uc">UC7</div>
+      </div>
+
+      <!-- Operator / System Architect -->
+      <div class="role-card" onclick="login('operator','Sys. Architect','SA','#16a34a')">
+        <div class="role-icon" style="background:rgba(22,163,74,0.25)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="10" opacity=".3"/></svg>
+        </div>
+        <div class="role-name">Operator / Architect</div>
+        <div class="role-desc">Self-healing service status, API throttling rules, and uptime monitoring.</div>
+        <div class="role-uc">UC8 · UC9</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — PATIENT
+     UC1: Voice | UC2: AI Diagnosis | UC3: Security | UC6: Appointments
+══════════════════════════════════════ -->
+<div class="screen" id="screen-patient">
+  <header class="header">
+    <div class="logo" onclick="logout()">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>
+      HealthMate
+    </div>
+    <div class="header-right">
+      <div class="role-badge" style="background:rgba(59,110,245,0.3)">Patient Portal</div>
+      <div class="user-chip"><div class="avatar" id="p-avatar">MU</div><div class="user-info"><div class="user-name" id="p-name">Muharrem Esad</div><div class="user-role">Patient</div></div></div>
+      <button class="logout-btn" onclick="logout()">← Switch role</button>
+    </div>
+  </header>
+  <nav class="sidebar">
+    <button class="nav-item active" id="p-nav-home" onclick="patientPage('home')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-tooltip">Dashboard</span></button>
+    <button class="nav-item" id="p-nav-voice" onclick="patientPage('voice')"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span class="nav-tooltip">UC1: Voice</span></button>
+    <button class="nav-item" id="p-nav-ai" onclick="patientPage('ai')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span class="nav-tooltip">UC2: AI Diagnosis</span></button>
+    <button class="nav-item" id="p-nav-security" onclick="patientPage('security')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="nav-tooltip">UC3: Login Security</span></button>
+    <button class="nav-item" id="p-nav-appts" onclick="patientPage('appts')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="nav-tooltip">UC6: Appointments</span></button>
+  </nav>
+  <main class="main">
+
+    <!-- HOME -->
+    <div class="page active" id="p-page-home">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
+        <div><div class="welcome-title">Welcome, Muharrem</div><div style="font-size:14px;color:var(--gray-500)">Your personal health summary at a glance.</div></div>
+        <button class="btn-primary" style="background:var(--red)" onclick="patientPage('security')">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Emergency
+        </button>
+      </div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card" onclick="patientPage('appts')"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="stat-num" style="color:var(--navy)">3</div><div class="stat-label">Visits</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#e0f2f1"><svg viewBox="0 0 24 24" style="stroke:#0d9488"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div class="stat-num" style="color:var(--navy)">2</div><div class="stat-label">Prescriptions</div></div></div>
+        <div class="stat-card" onclick="patientPage('ai')"><div class="stat-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24" style="stroke:#7c3aed"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="stat-num" style="color:var(--navy)">1</div><div class="stat-label">Lab Results</div></div></div>
+        <div class="stat-card" onclick="patientPage('appts')"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">1</div><div class="stat-label">Upcoming</div></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-left">
+          <div class="card pharmacy-card">
+            <div class="pharmacy-info">
+              <div class="pharmacy-title">Find a pharmacy near you.</div>
+              <div style="font-size:13px;color:var(--gray-500);line-height:1.6">Locate nearby and on-duty pharmacies; check stock for your prescriptions.</div>
+              <button class="btn-primary" style="align-self:flex-start"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Go to my prescriptions</button>
+            </div>
+            <div class="map-placeholder"><div style="font-size:40px">📍</div><div style="font-size:13px;color:var(--navy);font-weight:500">Kocaeli, Gebze</div></div>
+          </div>
+          <div>
+            <div class="section-label" style="margin-bottom:12px">Recent Visits</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="visit-item"><div class="visit-date-box"><div class="visit-month">May</div><div class="visit-day">13</div></div><div style="flex:1"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);margin-bottom:2px">Kocaeli Gebze 129 Nolu Aile Hekimliği Birimi</div><div style="font-size:13px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Family Medicine</div><div style="font-size:12px;color:var(--blue)">Dr. Muhammet Mustafa Taşçı</div></div><span class="badge badge-info">Follow-up</span></div>
+              <div class="visit-item"><div class="visit-date-box"><div class="visit-month">May</div><div class="visit-day">4</div></div><div style="flex:1"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);margin-bottom:2px">Kocaeli Gebze 129 Nolu Aile Hekimliği Birimi</div><div style="font-size:13px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Family Medicine</div><div style="font-size:12px;color:var(--blue)">Dr. Muhammet Mustafa Taşçı</div></div><span class="badge badge-scheduled">Completed</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-right">
+          <div class="card" style="padding:18px"><div class="section-label" style="margin-bottom:12px">Next Appointment</div><div style="font-size:18px;font-weight:600;color:var(--navy);margin-bottom:6px">22 May 2026</div><div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gray-500);margin-bottom:8px"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>13:00</div><div style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Family Medicine · Follow-up</div><span class="badge badge-scheduled">Scheduled</span></div>
+          <div class="card" style="padding:18px"><div class="section-label" style="margin-bottom:12px">Quick Access</div><div class="quick-grid"><div class="quick-item" onclick="patientPage('voice')"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><div><div class="quick-item-title">Voice Mode</div><div class="quick-item-sub">UC1 — accessibility</div></div></div><div class="quick-item" onclick="patientPage('ai')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><div class="quick-item-title">AI Diagnosis</div><div class="quick-item-sub">UC2 — simplify</div></div></div><div class="quick-item" onclick="patientPage('security')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><div><div class="quick-item-title">Security</div><div class="quick-item-sub">UC3 — login alerts</div></div></div><div class="quick-item" onclick="patientPage('appts')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><div><div class="quick-item-title">Appointments</div><div class="quick-item-sub">UC6 — auto-cancel</div></div></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UC1: VOICE -->
+    <div class="page" id="p-page-voice">
+      <div class="page-header"><div><div class="page-title">UC1 — Voice Symptom Input</div><div class="page-sub">Accessibility for blind patients — full text-to-speech support.</div></div><span class="badge badge-info" style="font-size:13px;padding:6px 14px">Blind Patient Use Case</span></div>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+        <div class="card" style="padding:40px;display:flex;flex-direction:column;align-items:center;text-align:center">
+          <div style="margin-bottom:24px;font-size:13px;color:var(--blue);font-weight:500;background:var(--blue-soft);padding:6px 16px;border-radius:20px">Screen reader & TTS compatible</div>
+          <button class="mic-btn" id="micBtn" onclick="toggleMic()" aria-label="Start voice recording">
+            <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div style="font-size:14px;color:var(--gray-500);margin-bottom:8px" id="voiceStatus">Tap the microphone to start speaking</div>
+          <div class="voice-transcript" id="transcript" aria-live="polite">Your spoken symptoms will appear here...</div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn-outline" onclick="readBack()"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Read back</button>
+            <button class="btn-outline" id="saveBtn" style="display:none" onclick="saveSymptom()"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Save</button>
+            <button class="btn-outline" onclick="clearTranscript()"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>Clear</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="padding:18px"><div class="section-label" style="margin-bottom:12px">Saved Symptoms</div><div style="display:flex;flex-direction:column;gap:8px" id="savedList"><div style="padding:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px"><div style="font-size:13px;color:var(--gray-900);margin-bottom:3px">"I have a headache and fever"</div><div style="font-size:11px;color:var(--gray-500)">Saved · 13 May 2026</div></div></div></div>
+          <div class="card" style="padding:18px"><div class="section-label" style="margin-bottom:10px">Postconditions</div><div style="font-size:13px;color:var(--gray-700);line-height:1.65">Symptom is saved to the database. A confirmation is read back to the user via Text-to-Speech (TTS). All buttons carry ARIA labels for screen reader compatibility.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UC2: AI DIAGNOSIS -->
+    <div class="page" id="p-page-ai">
+      <div class="page-header"><div><div class="page-title">UC2 — AI Simplified Diagnosis</div><div class="page-sub">AI translates complex medical language into plain text for patients.</div></div><span class="badge badge-purple" style="font-size:13px;padding:6px 14px">AI Engine Active</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card ai-card">
+          <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:20px">
+            <div style="width:44px;height:44px;border-radius:10px;background:var(--purple-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--purple);fill:none"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+            <div><div style="font-size:16px;font-weight:500;color:var(--gray-900);margin-bottom:4px">Diagnosis — 13 May 2026</div><div style="font-size:12px;color:var(--gray-500)">Dr. Muhammet Mustafa Taşçı · Family Medicine</div></div>
+            <span class="badge badge-purple" style="margin-left:auto">AI Simplified</span>
+          </div>
+          <div class="original-diag"><div class="diag-label">Original Medical Record</div><div class="diag-text">Patient presents with acute nasopharyngitis (J00) accompanied by mild pyrexia (37.8°C). Symptoms consistent with viral upper respiratory tract infection. Recommended analgesic and antipyretic therapy with paracetamol 500mg t.i.d. Advised adequate hydration and rest.</div></div>
+          <div class="ai-simplified"><div class="ai-simplified-label"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Plain Language Explanation</div><div class="ai-simplified-text">You have a common cold with a mild fever of 37.8°C. Your doctor recommends <strong>paracetamol (500mg, 3× daily)</strong> to ease discomfort. Drink plenty of water, rest, and book a follow-up if you still feel unwell after 10 days.</div></div>
+        </div>
+        <div class="card" style="padding:18px;display:flex;gap:20px">
+          <div style="flex:1"><div class="section-label" style="margin-bottom:8px">Preconditions</div><div style="font-size:13px;color:var(--gray-700);line-height:1.6">Patient is logged in · Diagnosis already stored · AI feature active</div></div>
+          <div style="flex:1"><div class="section-label" style="margin-bottom:8px">Postconditions</div><div style="font-size:13px;color:var(--gray-700);line-height:1.6">Patient sees original diagnosis + AI plain-language explanation side by side</div></div>
+          <div style="flex:1"><div class="section-label" style="margin-bottom:8px">Exception</div><div style="font-size:13px;color:var(--gray-700);line-height:1.6">AI fails → original shown with note to consult doctor</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UC3: SECURITY -->
+    <div class="page" id="p-page-security">
+      <div class="page-header"><div><div class="page-title">UC3 — Login Security</div><div class="page-sub">Suspicious login detection and real-time account alerts.</div></div><span class="badge badge-cancelled" style="font-size:13px;padding:6px 14px">Alert Active</span></div>
+      <div class="alert-banner danger">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div style="flex:1"><div class="alert-title">Suspicious login attempt detected</div><div class="alert-text">Login from unrecognized location: Istanbul, TR — Unknown device · 14 May 2026, 03:22 AM</div></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <button class="btn-outline" style="font-size:12px;padding:6px 12px;color:#7f1d1d;border-color:#fca5a5">This was me</button>
+          <button class="btn-primary" style="background:var(--red);font-size:12px;padding:6px 12px">Lock account</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card" style="padding:20px"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:6px">Security Notifications</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Get alerted on suspicious logins from new devices or locations.</div><div class="toggle-row"><span class="toggle-label">Security notifications</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div><div class="toggle-row"><span class="toggle-label">SMS alerts</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div><div class="toggle-row"><span class="toggle-label">Email alerts</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div></div>
+        <div class="card" style="padding:20px"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:6px">Trusted Devices</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:14px">New devices trigger an alert until confirmed.</div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)"><div><div style="font-size:13px;font-weight:500">MacBook Pro</div><div style="font-size:11px;color:var(--gray-500)">Istanbul · Active now</div></div><span class="badge badge-scheduled">Trusted</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)"><div><div style="font-size:13px;font-weight:500">iPhone 15</div><div style="font-size:11px;color:var(--gray-500)">Istanbul · 2h ago</div></div><span class="badge badge-scheduled">Trusted</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- UC6: APPOINTMENTS -->
+    <div class="page" id="p-page-appts">
+      <div class="page-header"><div><div class="page-title">UC6 — Auto-Cancel Appointments</div><div class="page-sub">Unconfirmed appointments are automatically cancelled after timeout.</div></div><button class="btn-primary"><svg viewBox="0 0 24 24" style="stroke:#fff"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Book new</button></div>
+      <div class="alert-banner warning"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="alert-title">Auto-cancel active</div><div class="alert-text">Unconfirmed appointments are cancelled after 24 hours. Doctor's schedule is automatically updated and both parties notified.</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="appt-row"><div class="appt-row-date"><div class="appt-row-month">May</div><div class="appt-row-day">22</div><div class="appt-row-time">01:00 PM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Family Medicine</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Dr. Muhammet M. Taşçı</div><div style="font-size:12px;color:var(--gray-500)">Follow-up</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-scheduled">Scheduled</span><button class="btn-cancel" onclick="cancelAppt(this)">Cancel</button></div></div>
+        <div class="appt-row" style="opacity:.6"><div class="appt-row-date" style="background:#fee2e2"><div class="appt-row-month" style="color:#dc2626">Jun</div><div class="appt-row-day" style="color:#7f1d1d">3</div><div class="appt-row-time">10:30 AM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Cardiology</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Dr. Ayşe Yılmaz</div><div style="font-size:12px;color:var(--gray-500)">Routine checkup</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-cancelled">Auto-cancelled</span></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — AUDITOR  (UC4)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-auditor">
+  <header class="header">
+    <div class="logo" onclick="logout()"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>HealthMate</div>
+    <div class="header-right"><div class="role-badge" style="background:rgba(124,58,237,0.35)">Auditor Portal</div><div class="user-chip"><div class="avatar" style="background:#7c3aed">AU</div><div class="user-info"><div class="user-name">Auditor User</div><div class="user-role">Auditor</div></div></div><button class="logout-btn" onclick="logout()">← Switch role</button></div>
+  </header>
+  <nav class="sidebar"><button class="nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span class="nav-tooltip">UC4: Audit Log</span></button></nav>
+  <main class="main">
+    <div class="page-header"><div><div class="page-title">UC4 — Log Audit</div><div class="page-sub">Non-repudiable record of all access to patient records. Tamper-proof and timestamped.</div></div><button class="btn-primary"><svg viewBox="0 0 24 24" style="stroke:#fff"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export logs</button></div>
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="stat-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24" style="stroke:#7c3aed"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="stat-num" style="color:var(--navy)">247</div><div class="stat-label">Total log entries</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div><div><div class="stat-num" style="color:var(--navy)">1</div><div class="stat-label">Flagged entries</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="stat-num" style="color:var(--navy)">12</div><div class="stat-label">Unique users</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">14</div><div class="stat-label">Days monitored</div></div></div>
+    </div>
+    <div class="filters"><button class="filter-btn active">All access</button><button class="filter-btn">Doctors only</button><button class="filter-btn">Admin</button><button class="filter-btn" style="border-color:#fca5a5;color:#dc2626">⚑ Flagged</button><button class="filter-btn">Last 7 days</button></div>
+    <div class="card" style="overflow:hidden">
+      <table class="log-table">
+        <thead><tr><th>User</th><th>Role</th><th>Record accessed</th><th>Timestamp</th><th>IP Address</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e8f0fe;color:#1a2744">MT</div>Dr. M. Taşçı</div></td><td><span class="badge badge-info">Doctor</span></td><td>Patient record #00142</td><td style="font-size:12px;color:var(--gray-500)">14 May 2026 · 09:14:22</td><td style="font-size:12px;color:var(--gray-500)">91.93.x.x</td><td><span class="badge badge-scheduled">OK</span></td></tr>
+          <tr style="background:#fff8f8"><td><div class="log-user"><div class="log-avatar" style="background:#fee2e2;color:#7f1d1d">??</div>Unknown</div></td><td><span class="badge badge-cancelled">Unknown</span></td><td>Patient record #00142</td><td style="font-size:12px;color:var(--gray-500)">14 May 2026 · 03:22:05</td><td style="font-size:12px;color:var(--red)">185.220.x.x</td><td><div class="log-flag"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Flagged</div></td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#fef3c7;color:#78350f">AK</div>Admin Kaya</div></td><td><span class="badge badge-pending">Admin</span></td><td>Doctor activity log #DR-08</td><td style="font-size:12px;color:var(--gray-500)">13 May 2026 · 15:40:11</td><td style="font-size:12px;color:var(--gray-500)">91.93.x.x</td><td><span class="badge badge-scheduled">OK</span></td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#ede9fe;color:#4c1d95">AU</div>Auditor</div></td><td><span class="badge badge-purple">Auditor</span></td><td>Full audit report — May 2026</td><td style="font-size:12px;color:var(--gray-500)">13 May 2026 · 11:05:44</td><td style="font-size:12px;color:var(--gray-500)">91.93.x.x</td><td><span class="badge badge-scheduled">OK</span></td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e8f0fe;color:#1a2744">MT</div>Dr. M. Taşçı</div></td><td><span class="badge badge-info">Doctor</span></td><td>Lab result #LAB-2205</td><td style="font-size:12px;color:var(--gray-500)">4 May 2026 · 10:22:18</td><td style="font-size:12px;color:var(--gray-500)">91.93.x.x</td><td><span class="badge badge-scheduled">OK</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — ADMIN  (UC5)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-admin">
+  <header class="header">
+    <div class="logo" onclick="logout()"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>HealthMate</div>
+    <div class="header-right"><div class="role-badge" style="background:rgba(217,119,6,0.35)">Admin Portal</div><div class="user-chip"><div class="avatar" style="background:#d97706">AK</div><div class="user-info"><div class="user-name">Admin Kaya</div><div class="user-role">Health Administrator</div></div></div><button class="logout-btn" onclick="logout()">← Switch role</button></div>
+  </header>
+  <nav class="sidebar"><button class="nav-item active"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-tooltip">UC5: Patient Logs</span></button></nav>
+  <main class="main">
+    <div class="page-header"><div><div class="page-title">UC5 — Access Patient Logs</div><div class="page-sub">View timestamped logs of doctor activity for monitoring and compliance.</div></div><button class="btn-primary"><svg viewBox="0 0 24 24" style="stroke:#fff"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button></div>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div><div class="stat-num" style="color:var(--navy)">38</div><div class="stat-label">Doctor actions today</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="stat-num" style="color:var(--navy)">5</div><div class="stat-label">Active doctors</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="stat-num" style="color:var(--navy)">124</div><div class="stat-label">Records reviewed</div></div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
+      <select style="padding:7px 12px;border:1px solid var(--gray-300);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-700);background:#fff"><option>All doctors</option><option>Dr. M. Taşçı</option><option>Dr. Ayşe Yılmaz</option></select>
+      <select style="padding:7px 12px;border:1px solid var(--gray-300);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-700);background:#fff"><option>Last 7 days</option><option>Last 30 days</option><option>Custom range</option></select>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <table class="log-table">
+        <thead><tr><th>Doctor</th><th>Action</th><th>Patient record</th><th>Timestamp</th><th>Department</th></tr></thead>
+        <tbody>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e8f0fe;color:#1a2744">MT</div>Dr. M. Taşçı</div></td><td><span class="badge badge-info">Viewed record</span></td><td>Patient #00142</td><td style="font-size:12px;color:var(--gray-500)">14 May 2026 · 09:14</td><td style="font-size:12px;color:var(--gray-500)">Family Medicine</td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e8f0fe;color:#1a2744">MT</div>Dr. M. Taşçı</div></td><td><span class="badge badge-purple">Updated diagnosis</span></td><td>Patient #00142</td><td style="font-size:12px;color:var(--gray-500)">13 May 2026 · 10:30</td><td style="font-size:12px;color:var(--gray-500)">Family Medicine</td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e0f2f1;color:#065f46">AY</div>Dr. A. Yılmaz</div></td><td><span class="badge badge-info">Viewed record</span></td><td>Patient #00098</td><td style="font-size:12px;color:var(--gray-500)">13 May 2026 · 08:55</td><td style="font-size:12px;color:var(--gray-500)">Cardiology</td></tr>
+          <tr><td><div class="log-user"><div class="log-avatar" style="background:#e8f0fe;color:#1a2744">MT</div>Dr. M. Taşçı</div></td><td><span class="badge badge-scheduled">Added prescription</span></td><td>Patient #00142</td><td style="font-size:12px;color:var(--gray-500)">4 May 2026 · 10:22</td><td style="font-size:12px;color:var(--gray-500)">Family Medicine</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 4 — DEVELOPER  (UC7)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-developer">
+  <header class="header">
+    <div class="logo" onclick="logout()"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>HealthMate</div>
+    <div class="header-right"><div class="role-badge" style="background:rgba(220,38,38,0.35)">Developer Portal</div><div class="user-chip"><div class="avatar" style="background:#dc2626">EO</div><div class="user-info"><div class="user-name">Esad Odabaşı</div><div class="user-role">Developer</div></div></div><button class="logout-btn" onclick="logout()">← Switch role</button></div>
+  </header>
+  <nav class="sidebar"><button class="nav-item active"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span class="nav-tooltip">UC7: DoS Protection</span></button></nav>
+  <main class="main">
+    <div class="page-header"><div><div class="page-title">UC7 — Prevent DoS Attacks</div><div class="page-sub">IP throttling and rate limiting — blocks IPs exceeding 100 requests/min.</div></div><span class="badge badge-scheduled" style="font-size:13px;padding:6px 14px">Protection Active</span></div>
+    <div class="alert-banner danger"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div style="flex:1"><div class="alert-title">DoS attack detected and blocked</div><div class="alert-text">IP 185.220.x.x sent 142 requests/min at 03:22 AM — automatically throttled and blocked. System remained stable for all other users.</div></div><button class="btn-primary" style="background:var(--red);font-size:12px;flex-shrink:0">View blocked IPs</button></div>
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="stat-num" style="color:var(--navy)">3</div><div class="stat-label">IPs blocked today</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="stat-num" style="color:var(--navy)">142</div><div class="stat-label">Peak req/min (blocked)</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-num" style="color:var(--navy)">100</div><div class="stat-label">Req/min threshold</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">99.98%</div><div class="stat-label">Uptime maintained</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card" style="padding:20px">
+        <div class="section-label" style="margin-bottom:16px">Request Rate — Last Hour</div>
+        <div class="throttle-bars">
+          <div class="throttle-bar safe" style="height:30%"></div><div class="throttle-bar safe" style="height:45%"></div><div class="throttle-bar safe" style="height:38%"></div><div class="throttle-bar safe" style="height:55%"></div><div class="throttle-bar safe" style="height:60%"></div><div class="throttle-bar warn" style="height:80%"></div><div class="throttle-bar block" style="height:100%"></div><div class="throttle-bar block" style="height:95%"></div><div class="throttle-bar warn" style="height:70%"></div><div class="throttle-bar safe" style="height:45%"></div><div class="throttle-bar safe" style="height:40%"></div><div class="throttle-bar safe" style="height:35%"></div>
+        </div>
+        <div class="throttle-legend"><span><span class="legend-dot" style="background:#0d9488;opacity:.6"></span>Normal</span><span><span class="legend-dot" style="background:#d97706;opacity:.6"></span>Warning</span><span><span class="legend-dot" style="background:#dc2626;opacity:.6"></span>Blocked</span></div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div class="section-label" style="margin-bottom:12px">Blocked IPs</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#fff8f8;border:1px solid #fca5a5;border-radius:8px"><div><div style="font-size:13px;font-weight:500;color:var(--gray-900)">185.220.x.x</div><div style="font-size:11px;color:var(--gray-500)">142 req/min · 14 May 03:22 AM</div></div><div style="display:flex;gap:6px"><span class="badge badge-cancelled">Blocked</span><button class="btn-outline" style="font-size:11px;padding:4px 10px;color:var(--green);border-color:var(--green)">Whitelist</button></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#fff8f8;border:1px solid #fca5a5;border-radius:8px"><div><div style="font-size:13px;font-weight:500;color:var(--gray-900)">193.42.x.x</div><div style="font-size:11px;color:var(--gray-500)">118 req/min · 12 May 11:45 PM</div></div><div style="display:flex;gap:6px"><span class="badge badge-cancelled">Blocked</span><button class="btn-outline" style="font-size:11px;padding:4px 10px;color:var(--green);border-color:var(--green)">Whitelist</button></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 5 — OPERATOR / ARCHITECT  (UC8, UC9)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-operator">
+  <header class="header">
+    <div class="logo" onclick="logout()"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>HealthMate</div>
+    <div class="header-right"><div class="role-badge" style="background:rgba(22,163,74,0.3)">Operator / Architect Portal</div><div class="user-chip"><div class="avatar" style="background:#16a34a">SA</div><div class="user-info"><div class="user-name">Sys. Architect</div><div class="user-role">Operator</div></div></div><button class="logout-btn" onclick="logout()">← Switch role</button></div>
+  </header>
+  <nav class="sidebar">
+    <button class="nav-item active" id="op-nav-heal" onclick="opPage('heal')"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="nav-tooltip">UC8: Self-Healing</span></button>
+    <button class="nav-item" id="op-nav-api" onclick="opPage('api')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span class="nav-tooltip">UC9: API Throttling</span></button>
+  </nav>
+  <main class="main">
+
+    <!-- UC8: SELF-HEALING -->
+    <div class="page active" id="op-page-heal">
+      <div class="page-header"><div><div class="page-title">UC8 — Self-Healing Service</div><div class="page-sub">System detects crashes and auto-restarts without human intervention.</div></div><span class="badge badge-scheduled" style="font-size:13px;padding:6px 14px">All services online</span></div>
+      <div class="alert-banner success"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div><div class="alert-title">Auto-recovery successful</div><div class="alert-text">Auth service crashed on 9 May at 02:14 AM — automatically restarted in 8 seconds. No manual intervention required. Operator notified via alert.</div></div></div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-num" style="color:var(--navy)">99.98%</div><div class="stat-label">Uptime — 30 days</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg></div><div><div class="stat-num" style="color:var(--navy)">1</div><div class="stat-label">Auto-restarts (30d)</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">8s</div><div class="stat-label">Last recovery time</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div><div class="stat-num" style="color:var(--navy)">8</div><div class="stat-label">Days since last crash</div></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card" style="padding:20px"><div class="section-label" style="margin-bottom:12px">Service Health Monitor</div><div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)"><div><div style="font-size:13px;font-weight:500">Auth Service</div><div style="font-size:11px;color:var(--gray-500)">Restarted 9 May · Running 8d</div></div><div style="display:flex;align-items:center;gap:8px"><div class="status-dot online"></div><span class="badge badge-scheduled">Online</span></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)"><div><div style="font-size:13px;font-weight:500">API Gateway</div><div style="font-size:11px;color:var(--gray-500)">Running 30+ days</div></div><div style="display:flex;align-items:center;gap:8px"><div class="status-dot online"></div><span class="badge badge-scheduled">Online</span></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)"><div><div style="font-size:13px;font-weight:500">Database</div><div style="font-size:11px;color:var(--gray-500)">Running 30+ days</div></div><div style="display:flex;align-items:center;gap:8px"><div class="status-dot online"></div><span class="badge badge-scheduled">Online</span></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--amber-soft);border-radius:8px;border:1px solid #fcd34d"><div><div style="font-size:13px;font-weight:500">AI Engine</div><div style="font-size:11px;color:#92400e">High load · 78% capacity</div></div><div style="display:flex;align-items:center;gap:8px"><div class="status-dot warn"></div><span class="badge badge-pending">Warning</span></div></div>
+        </div></div>
+        <div class="card" style="padding:20px"><div class="section-label" style="margin-bottom:12px">Recovery Event Log</div><div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-scheduled" style="flex-shrink:0;font-size:11px">Auto-restart</span><div><div style="font-size:13px;color:var(--gray-900)">Auth service crashed — auto-recovered</div><div style="font-size:11px;color:var(--gray-500)">9 May 2026 · 02:14 AM · 8s downtime</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-scheduled" style="flex-shrink:0;font-size:11px">Rollback</span><div><div style="font-size:13px;color:var(--gray-900)">DB rolled back to last stable state</div><div style="font-size:11px;color:var(--gray-500)">9 May 2026 · 02:14 AM · 0 data loss</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-info" style="flex-shrink:0;font-size:11px">Notified</span><div><div style="font-size:13px;color:var(--gray-900)">Operator alert sent — recovery confirmed</div><div style="font-size:11px;color:var(--gray-500)">9 May 2026 · 02:14 AM</div></div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- UC9: API THROTTLING -->
+    <div class="page" id="op-page-api">
+      <div class="page-header"><div><div class="page-title">UC9 — API Throttling</div><div class="page-sub">Enforce rate limits on external APIs so no single actor consumes all system resources.</div></div><span class="badge badge-pending" style="font-size:13px;padding:6px 14px">2 keys near limit</span></div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">78/100</div><div class="stat-label">Peak usage (req/min)</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fee2e2"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="stat-num" style="color:var(--navy)">12</div><div class="stat-label">Requests blocked today</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-num" style="color:var(--navy)">98.2%</div><div class="stat-label">Other users unaffected</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div><div><div class="stat-num" style="color:var(--navy)">4</div><div class="stat-label">Active API keys</div></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card" style="padding:20px"><div class="section-label" style="margin-bottom:12px">API Key Usage</div><div style="display:flex;flex-direction:column;gap:12px">
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray-700)">key_prod_a1b2 (AI Engine)</span><span style="font-size:13px;font-weight:500;color:var(--amber)">78/100</span></div><div class="progress-bar"><div class="progress-fill" style="width:78%;background:var(--amber)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray-700)">key_prod_c3d4 (Maps)</span><span style="font-size:13px;font-weight:500;color:var(--amber)">71/100</span></div><div class="progress-bar"><div class="progress-fill" style="width:71%;background:var(--amber)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray-700)">key_prod_e5f6 (SMS)</span><span style="font-size:13px;font-weight:500;color:var(--green)">22/100</span></div><div class="progress-bar"><div class="progress-fill" style="width:22%;background:var(--green)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray-700)">key_prod_g7h8 (Lab)</span><span style="font-size:13px;font-weight:500;color:var(--green)">9/100</span></div><div class="progress-bar"><div class="progress-fill" style="width:9%;background:var(--green)"></div></div></div>
+        </div></div>
+        <div class="card" style="padding:20px"><div class="section-label" style="margin-bottom:12px">Throttle Events</div><div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-cancelled" style="flex-shrink:0;font-size:11px">Blocked</span><div><div style="font-size:13px;color:var(--gray-900)">key_prod_a1b2 hit 100 req/min limit</div><div style="font-size:11px;color:var(--gray-500)">17 May 2026 · 11:05 AM · 429 returned</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-pending" style="flex-shrink:0;font-size:11px">Warning</span><div><div style="font-size:13px;color:var(--gray-900)">key_prod_c3d4 approaching limit (71/100)</div><div style="font-size:11px;color:var(--gray-500)">17 May 2026 · 10:50 AM</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="badge badge-info" style="flex-shrink:0;font-size:11px">Raised</span><div><div style="font-size:13px;color:var(--gray-900)">Architect raised AI key limit to 150/min</div><div style="font-size:11px;color:var(--gray-500)">15 May 2026 · 09:00 AM · manual override</div></div></div>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-100)"><div class="section-label" style="margin-bottom:8px">Exceptions</div><div style="font-size:13px;color:var(--gray-700);line-height:1.6">Legitimate high-usage keys can be raised manually. If the API gateway fails, backup throttle rules apply automatically.</div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN — DOCTOR  (UC6)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-doctor">
+  <header class="header">
+    <div class="logo" onclick="logout()"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#fff" fill="none" stroke-width="2"/></svg></div>HealthMate</div>
+    <div class="header-right"><div class="role-badge" style="background:rgba(13,148,136,0.35)">Doctor Portal</div><div class="user-chip"><div class="avatar" style="background:#0d9488">MT</div><div class="user-info"><div class="user-name">Dr. M. Taşçı</div><div class="user-role">Doctor</div></div></div><button class="logout-btn" onclick="logout()">← Switch role</button></div>
+  </header>
+  <nav class="sidebar">
+    <button class="nav-item active" id="dr-nav-dash" onclick="drPage('dash')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-tooltip">Dashboard</span></button>
+    <button class="nav-item" id="dr-nav-appts" onclick="drPage('appts')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="nav-tooltip">UC6: Appointments</span></button>
+    <button class="nav-item" id="dr-nav-patients" onclick="drPage('patients')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nav-tooltip">My Patients</span></button>
+  </nav>
+  <main class="main">
+
+    <!-- DOCTOR DASHBOARD -->
+    <div class="page active" id="dr-page-dash">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
+        <div><div class="welcome-title">Good morning, Dr. Taşçı</div><div style="font-size:14px;color:var(--gray-500)">Here's your schedule and patient overview for today.</div></div>
+        <span class="badge badge-scheduled" style="font-size:13px;padding:6px 14px">On duty</span>
+      </div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card" onclick="drPage('appts')"><div class="stat-icon" style="background:#e0f2f1"><svg viewBox="0 0 24 24" style="stroke:#0d9488"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="stat-num" style="color:var(--navy)">4</div><div class="stat-label">Today's appointments</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="stroke:#d97706"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--navy)">2</div><div class="stat-label">Awaiting confirmation</div></div></div>
+        <div class="stat-card" onclick="drPage('patients')"><div class="stat-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" style="stroke:#2563eb"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="stat-num" style="color:var(--navy)">18</div><div class="stat-label">Active patients</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fee2e2"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="stat-num" style="color:var(--navy)">1</div><div class="stat-label">Auto-cancelled today</div></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-left">
+          <div>
+            <div class="section-label" style="margin-bottom:12px">Today's Schedule</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="appt-row"><div class="appt-row-date"><div class="appt-row-month">May</div><div class="appt-row-day">22</div><div class="appt-row-time">09:00 AM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Muharrem Esad Odabaşı</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00142 · Family Medicine</div><div style="font-size:12px;color:var(--gray-500)">Follow-up</div></div><span class="badge badge-scheduled">Confirmed</span></div>
+              <div class="appt-row"><div class="appt-row-date"><div class="appt-row-month">May</div><div class="appt-row-day">22</div><div class="appt-row-time">10:30 AM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Zeynep Kaya</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00089 · Family Medicine</div><div style="font-size:12px;color:var(--gray-500)">New patient</div></div><span class="badge badge-pending">Unconfirmed</span></div>
+              <div class="appt-row" style="opacity:.6"><div class="appt-row-date" style="background:#fee2e2"><div class="appt-row-month" style="color:#dc2626">May</div><div class="appt-row-day" style="color:#7f1d1d">22</div><div class="appt-row-time">01:00 PM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Ali Çelik</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00211 · Family Medicine</div><div style="font-size:12px;color:var(--gray-500)">Routine checkup</div></div><span class="badge badge-cancelled">Auto-cancelled</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-right">
+          <div class="card" style="padding:18px">
+            <div class="section-label" style="margin-bottom:12px">Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn-primary" style="width:100%;justify-content:center" onclick="drPage('appts')"><svg viewBox="0 0 24 24" style="stroke:#fff"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Manage appointments</button>
+              <button class="btn-outline" style="width:100%;justify-content:center" onclick="drPage('patients')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>View patients</button>
+            </div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div class="section-label" style="margin-bottom:10px">Auto-cancel notice</div>
+            <div style="font-size:13px;color:var(--gray-700);line-height:1.65">Unconfirmed appointments are automatically cancelled after <strong>24 hours</strong>. Your schedule is updated and both you and the patient are notified.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UC6: DOCTOR APPOINTMENTS -->
+    <div class="page" id="dr-page-appts">
+      <div class="page-header"><div><div class="page-title">UC6 — Appointment Management</div><div class="page-sub">Unconfirmed appointments auto-cancel to keep your schedule clear.</div></div><button class="btn-primary"><svg viewBox="0 0 24 24" style="stroke:#fff"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add appointment</button></div>
+      <div class="alert-banner warning"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="alert-title">2 appointments awaiting confirmation</div><div class="alert-text">These will be auto-cancelled in less than 24 hours if not confirmed by the patient. Your schedule will be updated automatically.</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="appt-row"><div class="appt-row-date"><div class="appt-row-month">May</div><div class="appt-row-day">22</div><div class="appt-row-time">09:00 AM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Muharrem Esad Odabaşı</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00142 · Follow-up</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-scheduled">Confirmed</span></div></div>
+        <div class="appt-row" style="border:1px solid #fcd34d;background:#fffbeb"><div class="appt-row-date" style="background:#fef3c7"><div class="appt-row-month" style="color:#d97706">May</div><div class="appt-row-day" style="color:#78350f">22</div><div class="appt-row-time">10:30 AM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Zeynep Kaya</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00089 · New patient</div><div style="font-size:11px;color:var(--amber)">Auto-cancels in 18h if unconfirmed</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-pending">Unconfirmed</span></div></div>
+        <div class="appt-row" style="border:1px solid #fcd34d;background:#fffbeb"><div class="appt-row-date" style="background:#fef3c7"><div class="appt-row-month" style="color:#d97706">May</div><div class="appt-row-day" style="color:#78350f">23</div><div class="appt-row-time">02:00 PM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Hasan Demir</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00305 · Checkup</div><div style="font-size:11px;color:var(--amber)">Auto-cancels in 42h if unconfirmed</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-pending">Unconfirmed</span></div></div>
+        <div class="appt-row" style="opacity:.6"><div class="appt-row-date" style="background:#fee2e2"><div class="appt-row-month" style="color:#dc2626">May</div><div class="appt-row-day" style="color:#7f1d1d">22</div><div class="appt-row-time">01:00 PM</div></div><div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--gray-900);margin-bottom:2px">Ali Çelik</div><div style="font-size:13px;color:var(--gray-500);margin-bottom:2px">Patient #00211 · Routine checkup</div><div style="font-size:11px;color:var(--red)">Confirmation window expired — auto-cancelled & patient notified</div></div><span class="badge badge-cancelled">Auto-cancelled</span></div>
+      </div>
+    </div>
+
+    <!-- DOCTOR PATIENTS -->
+    <div class="page" id="dr-page-patients">
+      <div class="page-header"><div><div class="page-title">My Patients</div><div class="page-sub">Active patients under your care.</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:14px"><div class="log-avatar" style="width:42px;height:42px;background:#e8f0fe;color:#1a2744;font-size:14px">ME</div><div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--gray-900)">Muharrem Esad Odabaşı</div><div style="font-size:12px;color:var(--gray-500)">Patient #00142 · Last visit: 13 May 2026</div></div><span class="badge badge-scheduled">Active</span></div>
+        <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:14px"><div class="log-avatar" style="width:42px;height:42px;background:#e0f2f1;color:#065f46;font-size:14px">ZK</div><div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--gray-900)">Zeynep Kaya</div><div style="font-size:12px;color:var(--gray-500)">Patient #00089 · Last visit: 28 Apr 2026</div></div><span class="badge badge-info">New</span></div>
+        <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:14px"><div class="log-avatar" style="width:42px;height:42px;background:#fef3c7;color:#78350f;font-size:14px">HD</div><div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--gray-900)">Hasan Demir</div><div style="font-size:12px;color:var(--gray-500)">Patient #00305 · Last visit: 2 May 2026</div></div><span class="badge badge-scheduled">Active</span></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const STATUS = { online:true, warn:false };
+
+  function login(role, name, initials, color) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    let screenId = {
+      patient:'screen-patient', auditor:'screen-auditor',
+      admin:'screen-admin', developer:'screen-developer', operator:'screen-operator', doctor:'screen-doctor'
+    }[role] || 'screen-patient';
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function logout() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-login').classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function patientPage(p) {
+    document.querySelectorAll('#screen-patient .page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#screen-patient .nav-item').forEach(el => el.classList.remove('active'));
+    const pg = document.getElementById('p-page-'+p);
+    const nav = document.getElementById('p-nav-'+p);
+    if(pg) pg.classList.add('active');
+    if(nav) nav.classList.add('active');
+  }
+
+  function drPage(p) {
+    document.querySelectorAll('#screen-doctor .page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#screen-doctor .nav-item').forEach(el => el.classList.remove('active'));
+    const pg = document.getElementById('dr-page-'+p);
+    const nav = document.getElementById('dr-nav-'+p);
+    if(pg) pg.classList.add('active');
+    if(nav) nav.classList.add('active');
+  }
+
+  function opPage(p) {
+    document.querySelectorAll('#screen-operator .page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#screen-operator .nav-item').forEach(el => el.classList.remove('active'));
+    const pg = document.getElementById('op-page-'+p);
+    const nav = document.getElementById('op-nav-'+p);
+    if(pg) pg.classList.add('active');
+    if(nav) nav.classList.add('active');
+  }
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.filters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Voice
+  const phrases = ["I have a headache and mild fever since yesterday.","My throat is sore and I feel very tired.","I have chest tightness when walking up stairs."];
+  let recording = false, typingTimer;
+
+  function toggleMic() {
+    recording = !recording;
+    const btn = document.getElementById('micBtn');
+    const status = document.getElementById('voiceStatus');
+    const transcript = document.getElementById('transcript');
+    const saveBtn = document.getElementById('saveBtn');
+    btn.classList.toggle('recording', recording);
+    if (recording) {
+      status.textContent = 'Listening... speak now';
+      transcript.textContent = '';
+      saveBtn.style.display = 'none';
+      clearTimeout(typingTimer);
+      const phrase = phrases[Math.floor(Math.random()*phrases.length)];
+      let i = 0;
+      typingTimer = setInterval(() => {
+        transcript.textContent += phrase[i++];
+        if (i >= phrase.length) {
+          clearInterval(typingTimer);
+          recording = false;
+          btn.classList.remove('recording');
+          status.textContent = 'Transcription complete. Confirm or re-record.';
+          saveBtn.style.display = 'inline-flex';
+        }
+      }, 40);
+    } else { clearInterval(typingTimer); status.textContent = 'Recording stopped.'; }
+  }
+
+  function readBack() {
+    const text = document.getElementById('transcript').textContent;
+    if (text && text !== 'Your spoken symptoms will appear here...' && 'speechSynthesis' in window) {
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    }
+  }
+
+  function saveSymptom() {
+    const text = document.getElementById('transcript').textContent;
+    if (!text || text === 'Your spoken symptoms will appear here...') return;
+    const list = document.getElementById('savedList');
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:10px;background:var(--green-soft);border:1px solid #86efac;border-radius:8px';
+    item.innerHTML = `<div style="font-size:13px;color:var(--gray-900);margin-bottom:3px">"${text.substring(0,60)}..."</div><div style="font-size:11px;color:var(--gray-500)">Saved · Just now ✓</div>`;
+    list.prepend(item);
+    document.getElementById('voiceStatus').textContent = 'Symptom saved successfully!';
+    document.getElementById('saveBtn').style.display = 'none';
+  }
+
+  function clearTranscript() {
+    clearInterval(typingTimer); recording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('transcript').textContent = 'Your spoken symptoms will appear here...';
+    document.getElementById('voiceStatus').textContent = 'Tap the microphone to start speaking';
+    document.getElementById('saveBtn').style.display = 'none';
+  }
+
+  function cancelAppt(btn) {
+    const row = btn.closest('.appt-row');
+    row.querySelector('.badge').className = 'badge badge-cancelled';
+    row.querySelector('.badge').textContent = 'Cancelled';
+    btn.remove(); row.style.opacity = '0.6';
+  }
+</script>
+</body>
+</html>
